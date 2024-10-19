@@ -1,163 +1,52 @@
 \documentclass[bp,en]{FEIstyle}
 
-\usepackage{ amssymb }
-
 \FEIauthor{Erik Ziman}
 \FEItitle{Kryptografia na báze eliptických kriviek - analýza bezpečnosti a demonštrácia útokov}
 \FEItitleEn{Elliptic curve cryptography - security analysis and attack demonstration}
-\FEIregNr{FEI-UNKNOWN}
-\FEIsupervisor{Mgr. Karina Chudá, PhD.}
-%\FEIconsultant{Ing. John Doe}
-
 \FEIkeywords{kľúčové slovo1, kľúčové slovo2, kľúčové slovo3}
 \FEIkeywordsEn{keyword1, keyword2, keyword3}
+\FEIregNr{FEI-xxxx-xxxx (TODO: have this resolved)}
+\FEIsupervisor{Mgr. Karina Chudá, PhD.}
+\FEIconsultant{Mgr. Karina Chudá, PhD.}
+
 \FEIglossaries{includes/glossary}
 \bibliography{includes/bibliography.bib}
 
 \iffalse \input{includes/glossary} \fi
 
-
-
-\newcommand{\point}[1]{%
-    #1 = (x_{#1}, y_{#1}) %
-}
-
 \begin{document}
-As Yale University professor Serge Lang once noted in the beginning of his book \textit{Elliptic Curves: Diophantine Analysis}, ``It is possible to write endlessly on elliptic curves. (This is not a threat)." Indeed, elliptic curves form a deep and intricate subject. In this thesis, we will dive into the topic of elliptic curves, with a particular focus on their impact in the field of modern cryptography. We aim to explore their significance and key properties, highlighting the crucial role they play in many cryptographic systems. The primary aim of this thesis is to deepen our understanding of this complex topic to such an extent that we are able to implement elliptic curve cryptography (ECC) in various applications and programs. In addition to exploring the theoretical significance of elliptic curves, we will also implement a few examples of elliptic curves referenced with corresponding source code and visual representation. Furthermore, this thesis will shed light on various attacks and common mistakes in the implementation of these curves, emphasizing the importance of secure and correct practices when building cryptographic applications.
+\frontmatter
+\FEIpdfInfo
+\FEIcover
+\FEItitlePage
+% \FEIassignment{includes/assignment.jpeg}
+% \FEIassignment{includes/assignment_part2.jpeg}
+\FEIabstract{includes/abstract}
+\FEIabstractEn{includes/abstractEN}
+\FEIthanks{includes/thanks}
+% \FEIcontent
+\FEIlistOfFiguresAndTables
+\FEIlistOfGlossaries
+\FEIlistOfAlgorithms
+\FEIlistOfListings
 
-\section*{Motivation for Using Elliptic Curves}
-
-The main advantage of ECC is the degree of security it provides when considering its comparatively smaller key sizes.
-
-% \begin{table}[h]
-%     \centering
-%     \caption{Security Strength and Key Sizes}
-%     \begin{tabular}{|c|c|c|}
-%         \toprule
-%         \textbf{Security Strength} & \textbf{ECC} & \textbf{RSA/DSA/DH} \\
-%         \hline
-%         80 bits  & 160 bits  & 1024 bits  \\ \hline
-%         112 bits & 224 bits  & 2048 bits  \\ \hline
-%         128 bits & 256 bits  & 3072 bits  \\ \hline
-%         192 bits & 384 bits  & 7680 bits  \\ \hline
-%         256 bits & 521 bits  & 15360 bits \\
-%         \bottomrule
-%     \end{tabular}
-% \end{table}
-
-\begin{table}[h]
-    \centering
-    \caption{Time to Break vs Key Sizes}
-    \begin{tabular}{|c|c|c|}
-        \hline
-        \textbf{Time to Break (MIPS-years)} & \textbf{ECC Key Size (bits)} & \textbf{RSA Key Size (bits)} \\
-        \hline
-        $10^4$  & 106   & 512  \\ \hline
-        1$0^8$  & 132   & 768  \\ \hline
-        $10^{11}$    & 160   & 1024   \\ \hline
-        $10^{20}$    & 210   & 2048   \\ \hline
-        $10^{78}$    & 600   & 21000  \\
-        \hline
-    \end{tabular}
-\end{table}
+\input{MainThesisContent}
+\mainmatter
 
 
-With the keys being smaller, we are able to have better computational efficiency of the algorithms; thus, our requirements on hardware resources can lower. Another advantage is that almost all currently known systems based on the discrete logarithm problem can be converted into elliptic curve-based systems. The vast majority of elliptic curve cryptography schemes rely on the Elliptic Curve Discrete Logarithm Problem (ECDLP) for their security.
-\section*{What is an Elliptic Curve?}
-In order to start defining elliptic curves, we first need to introduce some terms up front.
-\subsection*{Algebraic curve:}
-An \textit{algebraic curve} (over a field $K$) is an equation $f(X,Y)=0$, where $f(X,Y)$ is a polynomial in $X$ and $Y$ with coefficients in $K$. A \textit{nonsingular algebraic curve} is an algebraic curve over $K$ without any singular points over $K$.
-\subsection*{K-rational point:}
-A $K$-\textit{rational point} is a solution $(X,Y)$ to the equation of an algebraic curve, where both $X$ and $Y$ are in the field $K$.
-\subsection*{Point at infinity:}
-The point at infinity $\mathcal{O}$ (also referred as 0) is the identity element of elliptic curve arithmetic. Adding this point to any other point (including itself) results in that other point:
-\[
-\mathcal{O} + P = P 
-\]
-\subsection*{Elliptic curve:}
-An \textit{elliptic curve} over a field $K$ is a nonsingular cubic curve, with a $K$-rational point (including a point at infinity). 
-We will primarily be working with curves that are defined by The Weierstrass Form:
-\[
-E: = \{ (x,y) \in K^2 \mid y^2=x^3+Ax+B\}\cup\{\mathcal{O}\} 
-\text{  (where $A$ and $B$ are from the field $K$)}
-\]
-Elliptic curve in this equation forms a group if \(4a^3 + 27b^2 \neq 0\).
-\begin{figure}[htbp]
-    \centering
-    \begin{subfigure}{0.3\textwidth}
-        \includegraphics[width=\linewidth]{curve__y^2_=_x^3_+4.png}
-        \caption{Curve: $y^2 = x^3 + 4$}
-        \label{fig:curve1}
-    \end{subfigure}%
-    \hfill % Add horizontal space between figures
-    \begin{subfigure}{0.3\textwidth}
-        \includegraphics[width=\linewidth]{curve__ y^2_=_x^3_-2x_+_3.png}
-        \caption{Curve: $y^2 = x^3 - 2x + 3$}
-        \label{fig:curve2}
-    \end{subfigure}%
-    \hfill % Add horizontal space between figures
-    \begin{subfigure}{0.3\textwidth}
-        \includegraphics[width=\linewidth]{curve__y^2_=_x^3_-5x_+2.png}
-        \caption{Curve: $y^2 = x^3 - 5x + 2$}
-        \label{fig:curve3}
-    \end{subfigure}
-    \caption{Examples of elliptic curves (over $\mathbb{R}$)}
-    \label{fig:elliptic_curves}
-\end{figure}
-\newpage
-% First, we are going to give a few examples over the field $\mathbb{R}$, then (for reasons that will be explained later), we are going to focus more on analyzing curves over finite fields.
+\FEIintroduction{includes/introduction}
+\FEIcore{includes/core}
+\FEIconclusion{includes/conclusion}
+\FEIresume{includes/resume} % Use only iff document is in english language
 
+% bibliography should use UTF-8 accents (write as is ľščťžýáí...) NOT converted by BibDesk
+% http://tex.stackexchange.com/questions/57743/how-to-write-%C3%A4-and-other-umlauts-and-accented-letters-in-bibliography
+\FEIbibliography %includes/bibliography.bib
 
-\section*{Operations on Elliptic Curves}
+\backmatter
 
-Now that we understand what an elliptic curve is, we need to define the operational rules necessary for performing point calculations on these curves.
-
-\subsection*{Addition:}
-\[
-\point{P_1} + \point{P_2} = \point{P_3}
-\]
-\[
-\lambda = \frac{y_{P2} - y_{P1}}{x_{P2} - x_{P1}} \quad \text{if } P_1 \neq P_2 \quad \text{and } P_1, P_2 \in E
-\]
-\[
-x_{P3} = \lambda^2 - x_{P1} - x_{P2} \text{ , } y_{P3} = \lambda(x_{P1} - x_{P3}) - y_{P1}
-\]
-\[
-P_3(x_{P3}, y_{P3}) = P_1 + P_2
-\]
-\subsection*{Negating a point:}
-\[ P = (x_{P1}, y_{P2}) \]
-\[ -P = -(x_{P1}, y_{P2}) = (x_{P1}, - y_{P2})
-\]
-% Notice how $P$ and $-P$ are inverse to each other.
-\subsection*{Subtraction:}
-\[
-P_1 - P_2 = (x_{P1}, y_{P1}) - (x_{P2}, y_{P2}) = (x_{P1}, y_{P2}) + (x_{P2}, -y_{P2})
-\]
-\subsection*{Multiplication:}
-Only scalar multiplication is possible. Multiplication between two points is not possible. Repeated addition is performed:
-\[
-2P = P + P 
-\]
-\[
-3P = P + P + P 
-\]% \textit{Note:} For slope calculation use the formula when $P = Q$.
-\subsection*{Division:}
-Only scalar division is possible. 
-\[
-\frac{1}{a} (x_p, y_p) = a^{-1} (x_p, y_p)
-\]
-
-\section*{Specific Examples}
-
-Let's have EC $E$ (over $\mathbb{R}$) with this formula:
-\[
-E: = \{ (x,y) \in R^2 \mid y^2=x^3-x+1\}\cup\{\mathcal{O}\} 
-\text{  (over $\mathbb{R}$)}
-\]
-
-Then, let's take two points $P_1 = (x_1, y_2)$ and $P_2 = (x_3, y_4)$, and $P_3 = (x_5, y_6)$ where $P_1 + P_2 = P_3$.
-
-Now, let's take two points $P_1 = (1, 1)$ and $P_2 = (0, -1)$.
-
+\FEIlistOfAppendix
+\FEIappendix{Štruktúra elektronického nosiča\label{att:A}}{includes/attachmentA}
+\FEIappendix{Algoritmus\label{att:B}}{includes/attachmentB}
+\FEIappendix{Výpis sublime\label{att:C}}{includes/attachmentC}
 \end{document}
