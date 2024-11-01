@@ -95,8 +95,8 @@
 \usepackage{amsmath}
 \usepackage{ifmtarg}
 \usepackage{xstring}
-\usepackage[compact]{titlesec}
 \usepackage{xcolor}
+\usepackage[compact]{titlesec}
 \usepackage{listings}
 \usepackage{lmodern}
 \usepackage{changepage}
@@ -772,7 +772,7 @@
     \setcounter{lstlisting}{0}
     \counterwithin{lstlisting}{section}
     % \setcounter{page}{1}  
-    \pagenumbering{Roman}
+    \pagenumbering{arabic}
     \cleardoublepage
     \phantomsection 
     \addcontentsline{toc}{section}{\@zoznamPri}
@@ -811,7 +811,7 @@
 \newcommand\frontmatter{%
     \clearpage
     %\@mainmatterfalse
-    \pagenumbering{roman}}
+    \pagenumbering{arabic}}
 
 \newcommand\mainmatter{%
     \cleardoublepage

@@ -36,9 +36,7 @@ x_{P_{#1}}
 
 \begin{document}
 As Yale University professor Serge Lang once noted in the beginning of his book \textit{Elliptic Curves: Diophantine Analysis}, ``It is possible to write endlessly on elliptic curves. (This is not a threat)." Indeed, elliptic curves form a deep and intricate subject. In this thesis, we will dive into the topic of elliptic curves, with a particular focus on their impact in the field of modern cryptography. We aim to explore their significance and key properties, highlighting the crucial role they play in many cryptographic systems. The primary aim of this thesis is to deepen our understanding of this complex topic to such an extent that we are able to implement elliptic curve cryptography (ECC) in various applications and programs. In addition to exploring the theoretical significance of elliptic curves, we will also implement a few examples of elliptic curves referenced with corresponding source code and visual representation. Furthermore, this thesis will shed light on various attacks and common mistakes in the implementation of these curves, emphasizing the importance of secure and correct practices when building cryptographic applications.
-
 \section*{Motivation for Using Elliptic Curves}
-
 The main advantage of ECC is the degree of security it provides when considering its comparatively smaller key sizes.
 
 \begin{table}[h]
@@ -120,12 +118,12 @@ Elliptic curve is considered to form a group if it's cubic polynomial, has no re
     \centering
     \begin{subfigure}{0.5\textwidth}
         \includegraphics[width=\linewidth]{img/curve_finite_y2=x3-x+3.png}
-        \caption{$y^2=x^3+4x-4 \mod 17$}
+        \caption{$y^2=x^3-x+3 \mod 97$}
         \label{fig:example_curve_4}
     \end{subfigure}%
     \begin{subfigure}{0.4841\textwidth}
         \includegraphics[width=\linewidth]{img/curve_finite-y2=x3-x-3.png}
-        \caption{$y^2=x^3+43x-41 \mod 37$}
+        \caption{$y^2=x^3-x-3 \mod 47$}
         \label{fig:example_curve_5}
     \end{subfigure}%
     \caption{Elliptic curves (over finite fields)}
@@ -269,7 +267,7 @@ We already know that elliptic curves form a group over finite field $\mathbb{F}_
 \[
 3 \times P + 9 \times P = 12 \times P
 \]
-As we saw in this example (TODO add reference to tangent point addition) adding a point $P_1$ to $P_2$ is being calculated the same way as adding $P_1$ to itself (assuming $P_1=P_2$). Since $P_1+P_1=2P_1$, adding a point to itself is the same operation as doubling the point. Now we have effective way for doubling a point using simple addition. 
+As we saw in this example (TODO add reference to tangent point addition) adding a point $P_1$ to $P_2$ is being calculated the same way as adding $P_1$ to itself (assuming $P_1=P_2$). Since $P_1+P_1=2\times P_1$, adding a point to itself is the same operation as doubling the point. Now we have effective way for doubling a point using simple addition. 
 
 We can leverage this by taking $k_2$ and start progressively doubling P as many times as there are binary digits from least significant bit (LSB) up to most significant "1" bit. For each "1" bit in $k$'s binary form, we add the corresponding multiple of 2 $\times$ P to the accumulated result. Here's an example:
 
@@ -358,13 +356,13 @@ TODO : add this
 
 \newpage
 
-\section*{Specific Examples}
+% \section*{Specific Examples}
 
-TODO : consider where (or if at all) to include this section \par
-\[
-E: = \{ (x,y) \in \mathbb{R}^2 \mid y^2=x^3-x+1\}\cup\{\mathcal{O}\} 
-\]
-\[
-P_1 = (1, 1), P_2 = (0, -1), P_3 = ?
-\]
+% TODO : consider where (or if at all) to include this section \par
+% \[
+% E: = \{ (x,y) \in \mathbb{R}^2 \mid y^2=x^3-x+1\}\cup\{\mathcal{O}\} 
+% \]
+% \[
+% P_1 = (1, 1), P_2 = (0, -1), P_3 = ?
+% \]
 \end{document}
