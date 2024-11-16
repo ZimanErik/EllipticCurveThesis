@@ -1,6 +1,6 @@
 \documentclass[bp,en]{FEIstyle}
 
-
+\usepackage{mathtools}
 \usepackage{ amssymb }
 \usepackage{float}
 
@@ -315,18 +315,35 @@ This computation uses $log_2(n)$ multiplications and on average $\frac{1}{2}log_
     \RETURN $P_3$
 \end{algorithmic}
 \end{algorithm}
+If we don't limit ourselves to  binary representation of a number $k$ we are able to optimize the computing time and resources even further by converting number $k$ in to balanced ternary numeral system which uses coefficients \{-1,0,1\}. Subtraction has same complexity as addition since it is the same operation with a twist of negating y coordinate. 
+
+\newpage
+
+\section*{Elliptic Curves over finite field}
+
+\subsection*{Order of EC}
+Order of EC over finite field is equal to number of points on this curve + point at infinity $\mathcal{O}$. We mark order of EC to be $n$.
+
+\subsection*{Generator point of EC subgroups}
+Generator point $G_S$ of a subgroup $S$ is a point on EC, which can generate any other point in $S$. We can generate all elements of $S$ by multiplying $G_S$ by all elements of $\langle 0,r-1\rangle $ where $r$ is the order of $S$. In cases where $S$ contains all points of EC, $G$ generates all points of EC.
+
+\subsection*{Subgroups formed by EC}
+Points on EC over finite field can form one or more finite cyclic subgroups. There are cases when EC will generate only one subgroup which is of same order as the EC itself ($n$). If EC forms multiple subgroups, it is given that these subgroups are all non-overlapping and cyclic. Sum of the orders of these subgroups + point at infinity $\mathcal{O}$ must be equal to order of the EC. 
+
+\subsection*{Cofactor of EC}
+Cofactor is equal to number of subgroups formed by EC. We mark cofactor of EC to be $h$
 
 
+% \begin{figure}[H] 
+%     \centering
+%     \includegraphics[width=0.9\textwidth]{EC_subgroups.png} 
+%     \caption{EC subgroups}
+%     \label{fig:example-image}
+% \end{figure}
 
-TODO : ADD TERNARY REPRESENTATION OF BINARY DIGITS
-for example 127 in binary is 111111 but in "ternary" it would be 100000-1
-
-If we don't limit ourselves to only binary representation of a number $k$ we are able to optimize the computing time and resources even further by introducing set of coefficients from {1,0} to {-1,0,1}. What this will do is we will 
-1. have to subtract some points multiples 
-2. have less additions to compute (which will save our time and resources)
-
-Subtraction is of same complexity as addition since it is exactly the same operation with a twist of negating y coorginate. 
-
+\subsection*{Point compression and decompression}
+When working with EC over finite field, we can observe that to every $x$ coordinate there are at most 2 corresponding $y$ coordinates. One of these is guaranteed to be odd and the other one to be even. We can use this information to further narrow down our requirements on storing these points in computer memory by just saving the $x$ coordinate and the parity of $y$ coordinate (we only need 1 bit for this). Then to decompress such point we need to calculate these two formulas and then chose the coordinate with correct parity: \\
+    $y_1 = \sqrt{x^3 + ax + b} \mod p$\\ $y_2 = - y_1 \mod p$
 \newpage
 
 \section*{EC in key exchange mechanisms:}
@@ -340,29 +357,134 @@ This asymmetry is fundemental DLP concept and it is one of the key
 elements which many cryptographic protocols use when relying on complexity of this problem.
 
 
+\subsection*{Primitive root:}
+If $g$ is primitive root of $p$, then the powers $g^1,g^2…,g^{p - 1}$ $\mod$ p, will produce all the integers congruent to numbers from 1 to p -1 in some order.
+
+
 \subsection*{Diffie-Hellman key exchange DH:}
 
-TODO : add this 
+Diffie-Hellman key exchange is a key exchange protocol that lets you generate a shared secret key over which all of your communication will be encrypted without the need to share this secret ahead of time. DH leverages the difficulty of the DLP. Imagine we have two Participants, let's call them Participant A and Participant B. We want for these participants to have safe and encrypted communication. In order to achieve this they will need some sort of symmetric encryption algorithm to be used on both sides and a shared secret key which will be used on encrypting and decrypting data they send to each other. These participants have never exchanged any information before so they don't have the ability to have shared secret key communicated upfront. This is where DH comes in. DH can be decoupled into 5 steps:
 
+\subsubsection*{Step 1}
+Participants agree on large prime number $p$ and it's primitive root $g$. Note that this information can be shared over insecure communication channel.
+
+\subsubsection*{Step 2}
+Participants generate their private keys (for example by using random number generator) and compute their respective public keys followingly:
+
+\[
+\text{Secret key of participant A} = a \text{, Secret key of participant B} = b
+\]
+\[
+a=random(), b=random()
+\]
+\[
+\text{Public key of participant A} = A \text{, Public key of participant B} = B
+\]
+\[
+A= g^a\mod p ,\text{ }B= g^b\mod p
+\]
+
+\subsubsection*{Step 3}
+Participants share their public keys A and B with one another. Note this can also be done over insecure communication channel.
+
+\subsubsection*{Step 4}
+Now it's time to calculate secret shared key $S$. 
+\[
+\text{Shared key for participant A }= S_A\text{, Shared key for participant B }= S_B
+\]
+\[
+S_A=B^a\mod p, \text{ }S_B=A^b\mod p 
+\]
+\[
+S_A=S_B 
+\]
+
+
+\subsubsection*{Step 5}
+Use S for encrypting and decrypting shared content 
+
+\subsubsection*{Visual example of DH}
+\begin{table}[h!]
+\centering
+\small % Reduces font size for the table
+\begin{tabular}{|p{1cm}|p{5cm}|p{5cm}|} % Defines column widths to allow text wrapping
+\hline
+\textbf{Steps} & \textbf{Participant A} & \textbf{Participant B} \\ \hline
+\textbf{1} & \multicolumn{2}{p{10cm}|}{Agree on a large prime number \( p \) and it's primitive root \( g \) } \\ \hline
+\textbf{2} & Generates private key \( a \) & Generates private key \( b \)  \\ \hline
+\textbf{3} & Calculates \( A = g^a \mod p \) and sends \( A \) to participant B & Calculates \( B = g^b \mod p \) and sends \( B \) to participant A \\ \hline
+\textbf{4} & Receives \( B \)  and calculates \( S_A = B^a \mod p \) & Receives \( A \)  and calculates \( S_B = A^b \mod p \) \\ \hline
+\textbf{5} & \multicolumn{2}{p{10cm}|}{Use \(S_A\) and \(S_B\) for encrypting and decrypting data } \\ \hline
+\end{tabular}
+\caption{Diffie-Hellman Key Exchange Process}
+\label{tab:diffie_hellman}
+\end{table}
+
+
+\subsubsection*{How does DH work?}
+Modulo operation is distributive. When we use it on expanded forms of $S_A$ and $S_B$ we can see:
+\[S_A=S_B
+\]
+\[
+(g^b \mod p)^a \mod p = (g^a \mod p)^b \mod p
+\]
+\[
+g^{ba} \mod p = g^{ab} \mod p
+\]
 
 \subsection*{Elliptic Curve Discrete Logarithm Problem ECDLP:}
-
-TODO : add this 
-
+ECDLP is a transformation of a classic DLP problem taken from a perspective of EC. When talking about ECDLP we take $E$ to be an elliptic curve over finite field with order $n$. Let $P$ and $Q$ to be points on $E$. ECDLP leverages these facts:\\
+- It is relatively easy to compute $Q$ as a result of $c\times P$ when given $c$ and $P$ \\
+- However, finding $c$ ($0\leq c \leq n-1$) when given only $P$ and $Q$ is much harder task
 \subsection*{Elliptic Curve Diffie-Hellman key exchange ECDH:}
-
-TODO : add this 
-
+ECDH is a transofmation of DH key exchange algorithm, which uses EC point multiplication instead of modular exponentiations. When transforming DH into ECDH we take G as a generator point of sufficiently large cyclic sub-group of all points generated by E. This G will then first be multiplied by private keys of participants A and B (generation of their public keys) and then after they share the public keys with one another, those public keys will be multiplied once again with their own private key.
+\subsubsection*{Visual example of ECDH}
+\begin{table}[h!]
+\centering
+\small % Reduces font size for the table
+\begin{tabular}{|p{1cm}|p{5cm}|p{5cm}|} % Defines column widths to allow text wrapping
+\hline
+\textbf{Steps} & \textbf{Participant A} & \textbf{Participant B} \\ \hline
+\textbf{1} & \multicolumn{2}{p{10cm}|}{Agree on definition of curve \(E\) and generator point \( G\)} \\ \hline
+\textbf{2} & Generates private key \( a \) & Generates private key \( b \)  \\ \hline
+\textbf{3} & Calculates \( A = a\times G \) and sends \( A \) to participant B & Calculates \( B = b\times G \) and sends \( B \) to participant A \\ \hline
+\textbf{4} & Receives \( B \)  and calculates \( S_A = a\times B  \) & Receives \( A \)  and calculates \( S_B = b\times A  \) \\ \hline
+\textbf{5} & \multicolumn{2}{p{10cm}|}{Use \(S_A\) and \(S_B\) for encrypting and decrypting data } \\ \hline
+\end{tabular}
+\caption{Elliptic Curve Diffie-Hellman Key Exchange Process}
+\label{tab:diffie_hellman}
+\end{table}
 
 \newpage
 
-% \section*{Specific Examples}
 
-% TODO : consider where (or if at all) to include this section \par
-% \[
-% E: = \{ (x,y) \in \mathbb{R}^2 \mid y^2=x^3-x+1\}\cup\{\mathcal{O}\} 
-% \]
-% \[
-% P_1 = (1, 1), P_2 = (0, -1), P_3 = ?
-% \]
+\section*{Attacks on EC}
+
+\subsection*{Chinese remainder theorem}
+Suppose we have numbers $m_1,m_2,...,m_n$ that are pairwise coprime. Then the system of n equations: 
+\[
+x = a_1 \mod m_1
+\]
+\[
+x = a_2 \mod m_2
+\]
+\[
+...
+\]
+\[
+x = a_n \mod m_n
+\]
+\[
+M=m_1*m_2*...*m_n 
+\]
+has a unique solution for $x \mod M$ 
+\[
+M_i = \frac{M}{m_i}
+\]
+\[
+x = \sum_{i=1}^{n} a_i*M_i*M_i^{-1}\mod M
+\]
+\subsection*{Not verifying that a point is on EC}
+Let's say that we are communicating with someone and we were really careful about which specific curve definition we should use, meaning our agreed curve $E$ and it's respective generator point $P$ is part of a subgroup with high enough order, that anybody who is trying to brute-force their way over our whole possible private key space doesn't stand a chance. If we take a better look at formula of addition on EC, we can notice that for such computations, we only need the value of $a$ and $p$, but never $b$ (taken from formula of general EC definition). Now let's consider a scenario where if received generator point $P$ or for example public key of other participant, we would not bother to check if this $P$ actually exists on our EC $E$. This means that theoretically someone could use this to their advantage and send us point $P$ which is on his malicious curve $E'$ instead of our $E$ and forms subgroup with a lot smaller order than our carefully picked curve $E$. Since we don't check if $P$ is part of $E$, we happily compute the multiplication process for $P$ on $E'$ and then share the result point with our attacker. How can attacker create such malicious curve? Answer is simple. He just needs to modify $b$ coefficient until he finds such curve $E'$ which forms subgroup of his desired order. Now let's say that he will generate as many malicious $E's$ and $Ps$ as he needs to in order to reveal how many operations does it take to get to the point $a\times P \mod r$ where $r$ is order of his malicious subgroup and $a$ is our private key. When attacker gets to a point where he has generated as many $E's$ and $Ps$ as he needed in order to reveal our true $a$ he can simply just use Chinese remainder theorem to tell him.   
+
 \end{document}
