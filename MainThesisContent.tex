@@ -54,13 +54,11 @@ The main advantage of ECC is the degree of security it provides when considering
         \hline
     \end{tabular}
 \end{table}
-
-
 With the keys being smaller, we are able to have better computational efficiency of the algorithms; thus, our requirements on hardware resources can lower. Another advantage is that almost all currently known systems based on the discrete logarithm problem can be converted into elliptic curve-based systems. The vast majority of elliptic curve cryptography schemes rely on the Elliptic Curve Discrete Logarithm Problem (ECDLP) for their security.
-\section*{What is an Elliptic Curve?}
-In order to start defining elliptic curves, we first need to introduce some terms up front.
+\section*{Key Terms and Definitions}
+% In order to start defining elliptic curves, we first need to introduce some terms up front.
 \subsection*{Algebraic curve:}
-An \textit{algebraic curve} (over field $K$) is set of points (x, y) in the plane that satisfy a a non-constant polynomial equation in two variables. A \textit{nonsingular algebraic curve} is algebraic curve without any singular points.
+An \textit{algebraic curve} (over field $K$) is set of points (x, y) in the plane that satisfy a a non-constant polynomial equation in two variables. A \textit{non-singular algebraic curve} is algebraic curve without any singular points. \textit{Singular point} is a point at which curve derivative is equal to 0, therefore having not well-defined tangent line.
 \[
 A: = \{ (x,y) \in K^2 \mid f(x, y) = 0\}  
 \]
@@ -74,20 +72,23 @@ A \( K \)-\textit{rational point} is a solution \( (x, y) \) to the equation of 
 \]
 
 \subsection*{Point at infinity:}
-The point at infinity $\mathcal{O}$ is the identity element of elliptic curve arithmetic. Adding this point to any other point (including itself) results in that other point:
+The point at infinity $\mathcal{O}$ is the identity element of elliptic curve arithmetic. Adding this point to any other point (including itself) results in that other point. This point is also inverse point of itself and has no affine (x,y) point representation.
 \[
 \mathcal{O} + P = P 
 \]
 \[
 \mathcal{O} + \mathcal{O} = \mathcal{O} 
 \]
+\[
+-\mathcal{O}=\mathcal{O} 
+\]
 \subsection*{Elliptic curve:}
-An \textit{elliptic curve} (over field $K$) is a nonsingular cubic curve, with at least 1 $K$-rational point. We will primarily be working with curves that are defined by The Weierstrass Form:
+An \textit{elliptic curve} (over field $K$) is a non-singular cubic curve, with at least 1 $K$-rational point. We will primarily be working with curves that are defined by The Weierstrass Form:
 \[
 E := \{ (x,y) \in K^2 \mid y^2 = x^3 + ax + b \} \cup \{ \mathcal{O} 
 \} \quad \text{with } a, b \in K
 \]
-Elliptic curve is considered to form a group if it's cubic polynomial, has no repeated roots.
+As stated previously, our requirement on elliptic curves is that they have to be non-singular. Cubic polynomial which defines such curves can't have repeated roots meaning $\Delta=4a^3+27b^2\neq0$ where $a,b \in K$
 \newpage
 
 \subsection*{Examples over $\mathbb{R}$:}
@@ -116,12 +117,12 @@ Elliptic curve is considered to form a group if it's cubic polynomial, has no re
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}{0.35\textwidth}
         \includegraphics[width=\linewidth]{img/curve_finite_y2=x3-x+3.png}
         \caption{$y^2=x^3-x+3 \mod 97$}
         \label{fig:example_curve_4}
     \end{subfigure}%
-    \begin{subfigure}{0.4841\textwidth}
+    \begin{subfigure}{0.338777\textwidth}
         \includegraphics[width=\linewidth]{img/curve_finite-y2=x3-x-3.png}
         \caption{$y^2=x^3-x-3 \mod 47$}
         \label{fig:example_curve_5}
@@ -130,6 +131,24 @@ Elliptic curve is considered to form a group if it's cubic polynomial, has no re
     \label{fig:example_elliptic_curves_2}
 \end{figure}
 % First, we are going to give a few examples over the field $\mathbb{R}$, then (for reasons that will be explained later), we are going to focus more on analyzing curves over finite fields.
+
+\subsection*{EC as Abelian Group}
+We will require $E$ with some binary operation $+$ to behave as additive Abelian group. Because we are dealing with additive group, we will be marking inverses of out points with sign -. For Abelian group behaviour we are going to need:
+
+1. Closure: $\forall P_i,P_j\in E$, $P_i + P_j\in E$
+
+2. Associativity: $\forall P_i,P_j,P_k\in E, (P_i + P_j)+ P_k=P_i+ (P_j+ P_k)$
+
+3. Identity element: $\forall P_i\in E,\exists \mathcal{O}: P_i+\mathcal{O}=P_i$
+
+3. Identity element: $\exists \mathcal{O}:\mathcal{O} \in E, \forall P_i\in E, P_i+\mathcal{O}=P_i$
+
+
+4. Inverse element: $\forall P_i\in E,\exists  (-P_i) : (-P_i) \in E, P+(-P)=\mathcal{O}$
+
+5. Commutativity: $\forall P_i,P_j\in E, P_i+P_j=P_j+P_i$
+
+
 \newpage
 \section*{Operations on Elliptic Curves}
 Now that we know what an elliptic curve is, let's define the operational rules for performing point calculations on these curves. \\
@@ -143,6 +162,9 @@ P = (x_P, y_P)
 \[ 
 -P = -(x_P, y_P) = (x_P, - y_P)
 \]
+% \[ 
+% \forall P_i\in E, \exists  -P_i \in E
+% \]
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.4\textwidth}
@@ -157,22 +179,23 @@ P = (x_P, y_P)
     \label{fig:negating_point_curves}
 \end{figure}
 % Notice how $P$ and $-P$ are inverse to each other.
-\subsection*{Finding inverse of a point:}
-\[ 
-P = (x_P, y_P) 
-\]
-\[ 
-P^{-1} = -P 
-\]
+% \subsection*{Finding inverse of a point:}
+% \[ 
+% P = (x_P, y_P) 
+% \]
+% \[ 
+% P^{-1} = -P 
+% \]
 \subsection*{Addition:}
-Addition is commutative meaning $P_i + P_j = P_j + P_i$. \\
-In these examples below we asume that $P_3 = P_1 + P_2$\\
-\text{ 1.) if } $P_1 \neq P_2$ and $P_1,P_2 \neq \mathcal{O} $:
+% Operation + is commutative meaning $\forall P_i, P_j \in E, P_i + P_j = P_j + P_i$. \\
+% In these examples below we assume that $P_3 = P_1 + P_2$\\
+
+\text{ 1.) if } $P_1 \neq P_2 \wedge P_1,P_2 \neq \mathcal{O} $:
 \[
-\lambda = \frac{y_{P_2} - y_{P_1}}{x_{P_2} - x_{P_1}}
+\lambda = \frac{y_{P_2} - y_{P_1}}{x_{P_2} - x_{P_1}} = (y_{P_2} - y_{P_1})(x_{P_2} - x_{P_1})^{-1} 
 \]
 \[
-P_3 = (\lambda^2 - x_{P_1} - x_{P_2}\text{ , } \lambda(x_{P_1} - x_{P_3}) - y_{P_1})
+P_1 + P_2 = (\lambda^2 - x_{P_1} - x_{P_2}\text{ , } \lambda(x_{P_1} - x_{P_3}) - y_{P_1}) = P_3
 \]
 \begin{figure}[H]
     \centering
@@ -190,13 +213,23 @@ P_3 = (\lambda^2 - x_{P_1} - x_{P_2}\text{ , } \lambda(x_{P_1} - x_{P_3}) - y_{P
 \end{figure}
 
 
-\text{2.) if } $P_1 = P_2$  and $y_{P_1},\ycor{2} \neq 0$ and $P_1,P_2 \neq \mathcal{O} $: \par
+\text{2.) if } $P_1 = P_2 \wedge y_{P_1},\ycor{2} \neq 0\wedge P_1,P_2 \neq \mathcal{O} $: \par
 \[
 m = \frac{3x_{P_1}^2 + a}{2y_{P_1}}
 \]
+
 \[
-P_3 = (m^2 - 2{x_{P1}}\text{ , } m(x_{P_1} - x_{P_3}) - y_{P_1})
+n = m^2 - 2{x_{P1}}
 \]
+
+% \[
+% P_1 + P_2 = (m^2 - 2{x_{P1}}\text{ , } m(x_{P_1} - x_{P_3}) - y_{P_1})
+% \]
+
+\[
+P_1 + P_2 = (n\text{ , } m(x_{P_1} - n) - y_{P_1}) = P_3
+\]
+
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.38\textwidth}
@@ -212,9 +245,9 @@ P_3 = (m^2 - 2{x_{P1}}\text{ , } m(x_{P_1} - x_{P_3}) - y_{P_1})
 \end{figure}
 
 
-\text{3.) if } $P_1 = P_2$  and $\ycor{1},\ycor{2} = 0$ \par
+\text{3.) if } $P_1 = P_2 \wedge \ycor{1},\ycor{2} = 0 \vee P_1 = -P_2$  \par
 \[
-P_3 = \mathcal{O} 
+P_1 + P_2 = \mathcal{O} = P_3
 \]
 \begin{figure}[ht]
     \centering
@@ -229,15 +262,15 @@ P_3 = \mathcal{O}
     \caption{Visual representation of point addition (case 3)}
     \label{fig:addition_elliptic_curves_3}
 \end{figure}
-\text{4.) if } $P_1 \neq \mathcal{O}$ , $P_2 = \mathcal{O}$  \par
+\text{4.) if } $P_1 \neq \mathcal{O} \wedge P_2 = \mathcal{O}$  \par
 \[
-P_3 = P_1 
+P_1 + P_2 = P_1 = P_3
 \]
 
-\text{5.) if } $P_1 = -P_2$ 
-\[
-P_3 = \mathcal{O}
-\]
+% \text{5.) if } $P_1 = -P_2$ 
+% \[
+% P_1 + P_2 = \mathcal{O}
+% \]\
 \subsection*{Subtraction:}
 \[
 P_1 - P_2 = P_1 + (-P_2)
@@ -249,27 +282,25 @@ P_1 - P_2 = P_1 + (-P_2)
 Only scalar multiplication is possible. By multiplication, we understand repeated addition of point to itself.
 \[
 k\times P = P + P + ... \text{ } k \text{ times }
-\] % \textit{Note:} For slope calculation use the formula when $P = Q$.
-% \subsection*{Division:}
-% Only scalar division is possible. 
-% \[
-% \frac{1}{a} (x_p, y_p) = a^{-1} (x_p, y_p)
-% \]
-
-
-
+\] 
 \subsubsection*{Larger multiples of points:}
 This works well in theory but what if $k$ was a really large number? It is obvious that in order to implement secure elliptic curve based algorithms, we will need to work with big multiples of points. The faster we can get to the result, the better. There is a number of techniques which can help us achieve faster computation of these big point multiplications.
 
 
 \subsubsection*{Double and add method:}
-We already know that elliptic curves form a group over finite field $\mathbb{F}_\mathbb{P}$ considering $P$ is a non-even prime. This means that whenever we add any of the two members of this group together the result will also have to be a member of this group. For example:
+Group formed by EC is closed under + operation. We can also notice that: 
 \[
-3 \times P + 9 \times P = 12 \times P
+    P+P=2\times P
 \]
-As we saw in this example (TODO add reference to tangent point addition) adding a point $P_1$ to $P_2$ is being calculated the same way as adding $P_1$ to itself (assuming $P_1=P_2$). Since $P_1+P_1=2\times P_1$, adding a point to itself is the same operation as doubling the point. Now we have effective way for doubling a point using simple addition. 
+\[
+    2\times P+2\times P=4\times P
+\]
+\[
+    ...
+\]
+In summary, adding a point to itself is the same operation as doubling the point and with our group having closure property, we are guaranteed to stay on EC even when doubling a point repeatedly. Now we have effective way for doubling $P$ using simple addition. 
 
-We can leverage this by taking $k_2$ and start progressively doubling P as many times as there are binary digits from least significant bit (LSB) up to most significant "1" bit. For each "1" bit in $k$'s binary form, we add the corresponding multiple of 2 $\times$ P to the accumulated result. Here's an example:
+When calculating $k\times P$ we progressively double P as many times as there are binary digits from least significant bit (LSB) up to most significant "1" bit. For each "1" bit in $k$'s binary form, we add the corresponding multiple of 2 $\times$ P to the accumulated result. Here's an example using $k=41$:
 
 \[
 41 \times P 
@@ -289,14 +320,7 @@ We can leverage this by taking $k_2$ and start progressively doubling P as many 
 1 & $16\times P$ & $3\times P+16\times P=19\times P$ \\ \hline
 1 & $32\times P$ & $19\times P+32\times P=41\times P$ \\ \hline
 \end{tabular}
-\caption{Binary Representation and Double-and-Add Method for $41 \times P$}\end{table}
-
-
-
-
-This computation uses $log_2(n)$ multiplications and on average $\frac{1}{2}log_2(n)$ additions. 
-
-
+\caption{Binary Representation and Double-and-Add Method for $41 \times P$}\end{table}This computation uses $log_2(n)$ point multiplications and on average $\frac{1}{2}log_2(n)$ point additions. 
 \newpage
 
 \begin{algorithm}
@@ -315,7 +339,99 @@ This computation uses $log_2(n)$ multiplications and on average $\frac{1}{2}log_
     \RETURN $P_3$
 \end{algorithmic}
 \end{algorithm}
-If we don't limit ourselves to  binary representation of a number $k$ we are able to optimize the computing time and resources even further by converting number $k$ in to balanced ternary numeral system which uses coefficients \{-1,0,1\}. Subtraction has same complexity as addition since it is the same operation with a twist of negating y coordinate. 
+We can minimize number of point additions by converting number $k$ into balanced ternary numeral system with coefficients \{-1,0,1\}. 
+
+\subsection*{Bézout's theorem for curves }
+If two algebraic curves, defined by polynomials, intersect in the projective plane, the number of intersection points (counted with multiplicities + points at infinity) is the product of the degrees of the two curves. For example two cubic curves  $C_1,C_2$ intersect at exactly $deg(C_1)*deg(C_2)=3*3=9$ total points of intersection. 
+% Bézout's theorem is the reason why every line intersects EC in exactly 3 points.
+\begin{figure}[h!]
+  \centering
+\includegraphics[width=0.45\textwidth]{cubes_intersection_assymetric.png}
+  \caption{Intersection of two cubic curves}
+  \label{fig:your_label}
+\end{figure}
+
+\subsection*{Cayley-Bacharach theorem}
+If $P_1...P_8$ are distinct points in projective plane, then there is a 9th point $P_9$ such that any cubic through $P_1...P_8$ also
+passes through $P_9$, if in $P_1...P_8$, there are no 4 points on a line, and no 7 on a conic
+
+\subsection*{Associativity of EC groups}
+Our main goal here is to show that: 
+\[
+\forall A,B,C \in E, \text{ }(A+B)+C=A+(B+C)
+\]
+We will prove same statement negated on both sided instead
+\[
+\forall A,B,C \in E, \text{ }-((A+B)+C)=-(A+(B+C))
+\]
+% Considering Bézout's theorem for curves and the fact that it takes exactly 9 points to define cubic curve, we can tell that group formed by EC is associative.
+Let's define 6 lines, where each defined by 3 points intersecting with EC like so:
+\[
+E_1= \text{line given by points: } \{A,B,-(A+B)\}
+\]
+\[
+E_2= \text{line given by points: } \{A+B,C,-((A+B)+C)\}
+\]
+\[
+E_3= \text{line given by points: } \{B+C,O,-(B+C)\}
+\]
+\[
+V_1= \text{line given by points: } \{A+B,O,-(A+B)\}
+\]
+\[
+V_2= \text{line given by points: } \{B,C,-(B+C)\}
+\]
+\[
+V_3= \text{line given by points: } \{A,B+C,-(A+(B+C))\}
+\]
+Lines defined above are represented visually in the following picture:
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.387\textwidth]{bezout_better_colors.png}
+  \caption{Visual representation of lines $E_1,E_2,E_3$ and $V_1,V_2,V_3$}
+  \label{fig:your_label}
+\end{figure}
+
+Notice we labeled new point $D$ where lines $E_2$ and $V_1$ intersect. We don't know for sure if $E$ passes through $D$. For all of the other points displayed in the picture above, we know for sure that $E$ passes through them. We know that $-(A+(B+C)) \in V_3$ and $-((A+B)+C) \in E_2$. We need $-((A+B)+C) = -(A+(B+C))=D$. Let's consider these two cubic curves:
+\[
+C_1: E_1E_2E_3=0
+\]
+\[
+C_2: V_1V_2V_3=0
+\]
+We know that $C_1$ and $C_2$ share these 8 points 
+\[
+\{A,B,-(A+B),C,A+B,B+C,-(B+C),O\}
+\]
+Cayley-Bacharach theorem states, that there must be 9th point in which they intersect. Bézout's theorem states that this point is the only point left in which $C_1$ and $C_2$ will intersect. Since $V_3$ is a factor of $C_2$,$D\in C_2$. We can now see what points lie on  $C_2\cap E$. It's points:
+\[
+\{A,B,-(A+B),C,A+B,B+C,-(B+C),O,-(A+(B+C)), D\}
+\]
+Above set of points has 10 elements, which contradicts with Bézout's theorem, meaning two of those points must be equal. By definition we know that the starting set of 8 points are all distinct, so the only duplicate point we have in this set is $D=-(A+(B+C))$. Similarly for $E_2$ being a factor of $C_1$,$D\in C_1$. \\$C_1\cap E$:
+\[
+\{A,B,-(A+B),C,A+B,B+C,-(B+C),O,-((A+B)+C), D\}
+\]
+The duplicate point we have in this set is $D=-((A+B)+C)$. Not only we have now proof that $D\in E$ but also that $D=-(A+(B+C))=-((A+B)+C)$. With this we also covered the associativity requirement for EC to behave as additive Abelian group.
+
+\newpage
+\subsection*{Projective coordinates}
+ Affine coordinates are commonly used to represent points on EC mostly because they are easy to work with and understand, but there is one problem of using such coordinates, especially when working over algebraically closed fields. This problem is that for every point addition we want to perform, we need to calculate $(x_{P1}+x_{P2})^{-1}$ using \textit{extended Euclidean algorithm} which is costly operation. To avoid this we can represent points of EC with projective coordinates. To convert point from affine $(x,y)$ to projective coordinates $(X,Y,Z)$, we take non-zero value of $Z$ and convert:
+
+ \[
+ (x,y) \equiv (xZ,yZ,Z)
+ \]
+ Example:
+ \[
+ (1,2) \equiv (3,6,3) = (4,8,4) = (5,10,5) ...
+ \]
+To convert projective coordinates to affine coordinates:
+\[
+(x,y) = (\frac{X}{Z},\frac{Y}{Z})
+\]
+ Definition of EC achieved by converting affine coordinates to projective ones:
+\[
+E:={\{ (X:Y:Z) \in \mathbb{P}^2(K) \mid Y^2Z=X^3 + aXZ^2+bZ^3\}}
+\]
 
 \newpage
 
@@ -328,7 +444,7 @@ Order of EC over finite field is equal to number of points on this curve + point
 Generator point $G_S$ of a subgroup $S$ is a point on EC, which can generate any other point in $S$. We can generate all elements of $S$ by multiplying $G_S$ by all elements of $\langle 0,r-1\rangle $ where $r$ is the order of $S$. In cases where $S$ contains all points of EC, $G$ generates all points of EC.
 
 \subsection*{Subgroups formed by EC}
-Points on EC over finite field can form one or more finite cyclic subgroups. There are cases when EC will generate only one subgroup which is of same order as the EC itself ($n$). If EC forms multiple subgroups, it is given that these subgroups are all non-overlapping and cyclic. Sum of the orders of these subgroups + point at infinity $\mathcal{O}$ must be equal to order of the EC. 
+Points on EC over a finite field can form one or more finite cyclic subgroups. There are cases where the EC will generate only one subgroup, which is of the same order as the EC itself ($n$). If EC forms multiple subgroups, it is given that these subgroups are all nonoverlapping and cyclic. Sum of the orders of these subgroups + point at infinity $\mathcal{O}$ must be equal to order of the EC. 
 
 \subsection*{Cofactor of EC}
 Cofactor is equal to number of subgroups formed by EC. We mark cofactor of EC to be $h$
