@@ -43,7 +43,7 @@ The application generates `.csv` files to store the results and performance metr
 
 ## 🚀 How to Compile and Run
 
-1.  **Prerequisites:** Ensure you have a C++ compiler (like `g++`), the NTL library, and its dependency GMP installed on your system. Refer to the NTL documentation for installation instructions.
+1.  **Prerequisites:** Ensure you have a C++ compiler (like `g++`), the NTL library, and its dependency GMP installed on your system.
 2.  **Compile:** Navigate to the repository's root directory in your terminal and run the following command:
     ```bash
     g++ thesis.cpp -o thesis -lntl -lgmp -g -march=native -O2
