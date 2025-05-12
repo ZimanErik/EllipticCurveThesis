@@ -41,6 +41,20 @@ The application generates `.csv` files to store the results and performance metr
 -   **Generated Results:** When you run the application, it outputs results into `.csv` files (e.g., `ECDLP_BSGS.csv`, `shamir_results.csv`).
 -   **Thesis Results:** Files included in the repository that end with `-test.csv` (e.g., `ECDLP_BSGS-test.csv`, `ECDLP_PollardRho-test.csv`) contain the specific results that were tested and are presented as part of the bachelor's thesis documentation. The application will generate corresponding files *without* the `-test` suffix during its execution.
 
+## 🚀 How to Compile and Run
+
+1.  **Prerequisites:** Ensure you have a C++ compiler (like `g++`), the NTL library, and its dependency GMP installed on your system. Refer to the NTL documentation for installation instructions.
+2.  **Compile:** Navigate to the repository's root directory in your terminal and run the following command:
+    ```bash
+    g++ thesis.cpp -o thesis -lntl -lgmp -g -march=native -O2
+    ```
+3.  **Run:** Execute the compiled application:
+    ```bash
+    ./thesis
+    ```
+    The application will then present a menu for you to choose the desired operation.
+    
+
 ## 🧪 Generating New Test Cases
 
 Included in the repository is a Python script: `generate_curves.py`.
