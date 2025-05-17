@@ -53,7 +53,7 @@ def get_iterations():
 
 def generate_shamir_curves():
     bit_sizes = get_bit_size_range()
-    iterations_per_size = get_iterations()
+    iterations_per_size = 1000
     output_path = Path("shamircurves_extra.json")
     results = []
 
@@ -99,7 +99,8 @@ def generate_shamir_curves():
 def generate_ecdlp_curves():
     type = get_ecdlp_solver_type()
     bit_sizes = get_bit_size_range()
-    iterations_per_size = get_iterations()
+    # iterations_per_size = get_iterations()
+    iterations_per_size = 100
     
     if type == "1":
         output_path = Path("ecdlpcurvesnaive_extra.json")

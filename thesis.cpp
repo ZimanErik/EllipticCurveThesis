@@ -436,8 +436,8 @@ pair<vector<bool>, vector<bool>> alignNumbers(const ZZ& a, const ZZ& b) {
 }
 
 // computing s*P + t*Q
-ECPoint shamirsTrick(const ECPoint& P, const ECPoint& Q, const ZZ& s, const ZZ& t, const EllipticCurve& EC) {
-    auto [sBits, tBits] = alignNumbers(s, t);
+ECPoint shamirsTrick(const ECPoint& P, const ECPoint& Q, const ZZ& n, const ZZ& m, const EllipticCurve& EC) {
+    auto [sBits, tBits] = alignNumbers(n, m);
     long bitLength = sBits.size();
     
     ECPoint result = ECPoint();
@@ -456,6 +456,13 @@ ECPoint shamirsTrick(const ECPoint& P, const ECPoint& Q, const ZZ& s, const ZZ& 
     }
     
     return result;
+}
+
+ECPoint naiveLinearCombination(const ECPoint& P, const ECPoint& Q, const ZZ& n, const ZZ& m, const EllipticCurve& EC) {
+
+    ECPoint nP = scalarPointMultiplication(n,P,EC);
+    ECPoint mQ = scalarPointMultiplication(m,Q,EC);
+    return addPoints(nP,mQ,EC);
 }
 
 // Function to print bit vectors
@@ -703,7 +710,6 @@ int getIntInput(const string& prompt) {
     }
 }
 
-int testingval;
 void showECDLPSubMenu() {
     bool inSubMenu = true;
 
@@ -748,8 +754,8 @@ void showECDLPSubMenu() {
     }
 }
 
-int runShamirTrickAnalysis(){
-    vector<ShamirJSONTestParams> curves = loadShamirParams("shamircurves_extra.json");
+int calculateLinearCombinationOfPoints(const string& filename, const string& outputFilename, ECPoint (*calculateLinearCombination)(const ECPoint& P, const ECPoint& Q, const ZZ& n, const ZZ& m, const EllipticCurve& EC)){
+    vector<ShamirJSONTestParams> curves = loadShamirParams(filename);
     if (curves.empty()) {
         cout << "Exiting because JSON file is empty." << endl;
         return 1;
@@ -758,16 +764,12 @@ int runShamirTrickAnalysis(){
     clock_t start;
     clock_t end;
     clock_t startbrute;
-    clock_t endbrute;
-    vector<int> results;
     stringstream ss;
     vector<clock_t> vec_elapsed;
-    vector<clock_t> vec_brute_elapsed;
-    ofstream outputFile("shamir_results.csv", ios::app);
+    ofstream outputFile(outputFilename, ios::app);
     int cnt = 0;
     for (size_t i = 0; i < 2; i++) {
         clock_t sumofelapsed = 0;
-        clock_t sumofbruteelapsed = 0;
         for (int j=0;j<1000;j++){
             const auto& curve = curves[cnt++];
             cout << "Curve #" << cnt << endl;
@@ -779,43 +781,22 @@ int runShamirTrickAnalysis(){
             cout << "Executing Shamirs trick on points " << n << "*" << P.toString() << " and " << m << "*" << Q.toString() << endl ;
             cout << "Bit size of curve order : " << curve.bit_size << endl;
             cout << "Curve order : " << curve.curve_order << endl;
-
-            // cout << "Curve #" << i + 1 << ":" << endl;
-            // cout << "Key bit Size: " << curve.bit_size << endl;
-
-            // // privateKey = ZZ(30004);
-            // cout << "Generated private key: " << privateKey << endl;
-            // ECPoint multipliedPoint = scalarPointMultiplication(privateKey, Point, EC);
-
             start = clock();
-            ECPoint resultPoint = shamirsTrick(P,Q,n,m,EC);
+            ECPoint resultPoint = calculateLinearCombination(P,Q,n,m,EC);
             end = clock();
-
-            startbrute = clock();
-            ECPoint nP = scalarPointMultiplication(n,P,EC);
-            ECPoint mQ = scalarPointMultiplication(m,Q,EC);
-            ECPoint sumpoint = addPoints(nP,mQ,EC);
-            endbrute = clock();
             
             clock_t elapsed = end - start;
-            clock_t brute_elapsed = endbrute - startbrute;
-            // results.push_back(static_cast<int>(elapsed));
             
             printf("Time measured: %ld ticks.\n", elapsed);
-            printf("Time of bruteforce: %ld ticks.\n", brute_elapsed);
-            cout << "Shamirs trick = scalarMult function : " << (sumpoint==resultPoint ? "yes" : "no") << endl << endl;
-
 
             ss << static_cast<int>(elapsed);
             ss << ",";
             sumofelapsed += elapsed;
-            sumofbruteelapsed += brute_elapsed;
         
         }
         outputFile << ss.str() << "\n";
         ss = stringstream();
         vec_elapsed.push_back(sumofelapsed);
-        vec_brute_elapsed.push_back(sumofbruteelapsed);
     }
 
     outputFile.close();
@@ -824,31 +805,76 @@ int runShamirTrickAnalysis(){
         cout << res << ", " ;
     }
     cout << endl;
-
-    cout << "BRUTE RESULTS: " << endl;
-    for ( auto& res : vec_brute_elapsed ){
-        cout << res << ", " ;
-    }
-    cout << endl;
+    
     return 0;
 }
+
+int calculateNaiveLinearCombination() {
+    return calculateLinearCombinationOfPoints("shamircurves_extra.json", "shamir_resultsnaive.csv", naiveLinearCombination);
+}
+
+int calculateShamirTrick() {
+    return calculateLinearCombinationOfPoints("shamircurves_extra.json", "shamir_results.csv", shamirsTrick);
+}
+
+void showLinearCombinationOfPointsMenu() {
+    bool inSubMenu = true;
+
+    while (inSubMenu) {
+        cout << "\n--- Choose algorithm calculate linear combination of two points ---\n";
+        cout << "1. Shamir's trick\n";
+        cout << "2. Naive search\n";
+        cout << "3. Return to Main Menu\n";
+
+        int choice = getIntInput("Enter your choice (1-3): ");
+
+        switch (choice) {
+            case 1: {
+                cout << "starting to calculate linear combination of two points using Shamir's trick\n";
+                calculateShamirTrick();
+                inSubMenu = false;
+                break;
+            }
+            case 2: {
+                cout << "starting to calculate linear combination of two points using Naive search\n";
+                calculateNaiveLinearCombination();
+
+                inSubMenu = false;
+                break;
+            }
+            case 3: {
+                cout << "Exit the application...\n";
+                inSubMenu = false;
+                break;
+            }
+            default: {
+                cout << "Invalid option. Please choose 1, 2, or 3.\n";
+                break;
+            }
+        }
+    }
+}
+
+
+
+
 int main() {
 
     bool running = true;
 
     while (running) {
         cout << "\n=== Main Menu ===\n";
-        cout << "1. execute Shamir's trick\n";
-        cout << "2. execute ECDLP\n";
+        cout << "1. run tests for calculating linear combination of two points\n";
+        cout << "2. run tests for solving ECDLP instances\n";
         cout << "3. Exit\n";
 
         int mainChoice = getIntInput("Enter your choice (1-3): ");
 
         switch (mainChoice) {
             case 1: {
-                runShamirTrickAnalysis();
-                cout << "Exiting application. Goodbye!\n";
+                showLinearCombinationOfPointsMenu();
                 running = false;
+                cout << "Exiting application. Goodbye!\n";
                 break;
             }
             case 2: {
@@ -858,8 +884,8 @@ int main() {
                 break;
             }
             case 3: {
-                cout << "Exiting application. Goodbye!\n";
                 running = false;
+                cout << "Exiting application. Goodbye!\n";
                 break;
             }
             default: {
