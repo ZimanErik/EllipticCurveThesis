@@ -55,7 +55,7 @@ def main():
     )
 
     plt.title("Shamir's Trick vs Naive Scalar Point Multiplication (for 256-bit curves)")
-    plt.ylabel("Execution Time (in ticks)")
+    plt.ylabel("Execution Time (in μs)")
     # plt.ylim(5000, 35000)
     plt.tight_layout()
     plt.show()

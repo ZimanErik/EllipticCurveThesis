@@ -1,18 +1,18 @@
 Statistics for Shamir's trick:
-  Min: 1919
-  1st Quartile (Q1): 2147
-  Median: 2314
-  Mean: 2480
-  3rd Quartile (Q3): 2618
-  Max: 12898
-  Standard Deviation: 626
+  Min: 1211
+  1st Quartile (Q1): 1440
+  Median: 1521
+  Mean: 1635
+  3rd Quartile (Q3): 1696
+  Max: 4514
+  Standard Deviation: 332
 ----------------------------------------
 Statistics for Naive scalar multiplication:
-  Min: 4119
-  1st Quartile (Q1): 4631
-  Median: 4898
-  Mean: 5187
-  3rd Quartile (Q3): 5420
-  Max: 16668
-  Standard Deviation: 968
+  Min: 2523
+  1st Quartile (Q1): 2887
+  Median: 3015
+  Mean: 3136
+  3rd Quartile (Q3): 3209
+  Max: 7815
+  Standard Deviation: 448
 ----------------------------------------

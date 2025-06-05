@@ -399,9 +399,9 @@ pair<vector<bool>, vector<bool>> alignNumbers(const ZZ& a, const ZZ& b) {
     return {aBits, bBits}; 
 }
 
-// computing s*P + t*Q
-ECPoint shamirsTrick(const ECPoint& P, const ECPoint& Q, const ZZ& n, const ZZ& m, const EllipticCurve& EC) {
-    auto [sBits, tBits] = alignNumbers(n, m);
+// computing m*P + l*Q
+ECPoint shamirsTrick(const ECPoint& P, const ECPoint& Q, const ZZ& m, const ZZ& l, const EllipticCurve& EC) {
+    auto [sBits, tBits] = alignNumbers(m, l);
     long bitLength = sBits.size();
     
     ECPoint result = ECPoint();
@@ -422,11 +422,11 @@ ECPoint shamirsTrick(const ECPoint& P, const ECPoint& Q, const ZZ& n, const ZZ& 
     return result;
 }
 
-ECPoint naiveLinearCombination(const ECPoint& P, const ECPoint& Q, const ZZ& n, const ZZ& m, const EllipticCurve& EC) {
+ECPoint naiveLinearCombination(const ECPoint& P, const ECPoint& Q, const ZZ& m, const ZZ& l, const EllipticCurve& EC) {
 
-    ECPoint nP = scalarPointMultiplication(n,P,EC);
-    ECPoint mQ = scalarPointMultiplication(m,Q,EC);
-    return addPoints(nP,mQ,EC);
+    ECPoint mP = scalarPointMultiplication(m,P,EC);
+    ECPoint lQ = scalarPointMultiplication(l,Q,EC);
+    return addPoints(mP,lQ,EC);
 }
 
 // Function to print bit vectors
