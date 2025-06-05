@@ -101,7 +101,6 @@ struct EllipticCurve {
 
     EllipticCurve(ZZ a, ZZ b, ZZ p) : a(a), b(b), p(p) {}
 
-    // TODO : check if there is a way to calculate moduli before and restore it after function ends     
     bool isOnCurve(const ECPoint& P) const {
 
         if (P.isPointAtInfinity) return true;
@@ -170,7 +169,7 @@ ECPoint addPoints(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC){
     }
     catch (PointNotOnCurveException& e) {
         cout << "Caught an exception: " << e.what() << endl;
-        return ECPoint(); // TODO : add something better than point at infinity here 
+        return ECPoint(); 
     }
 
 
@@ -211,7 +210,7 @@ ECPoint scalarPointMultiplication(const ZZ& k_const, const ECPoint& P, const Ell
     }
     catch (PointNotOnCurveException& e) {
         cout << "Caught an exception: " << e.what() << endl;
-        return ECPoint(); // TODO : add something better than point at infinity here 
+        return ECPoint(); 
     }
 
     ECPoint result; 
