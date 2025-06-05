@@ -266,16 +266,16 @@ ZZ bruteSearchSubgroupOrder(const ECPoint& P, const EllipticCurve& EC){
     return order;
 }
 
-ZZ naiveSearchECDLP(const ECPoint& P, const ECPoint& multipleOfP, const EllipticCurve& EC, const ZZ& subgroupOrder){
+ZZ naiveSearchECDLP(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, const ZZ& n){
 
     if (!EC.isOnCurve(P)) throw PointNotOnCurveException(P, EC);
-    if (!EC.isOnCurve(multipleOfP)) throw PointNotOnCurveException(P, EC);
+    if (!EC.isOnCurve(Q)) throw PointNotOnCurveException(P, EC);
 
     ZZ order = ZZ(0);           
     ECPoint temp = ECPoint();        
     
-    while (order <= subgroupOrder) {
-        if (temp == multipleOfP) {
+    while (order <= n) {
+        if (temp == Q) {
             break;
         }
         temp = addPoints(temp, P, EC); 
@@ -285,9 +285,9 @@ ZZ naiveSearchECDLP(const ECPoint& P, const ECPoint& multipleOfP, const Elliptic
 
 }
 
-ZZ babyStepGiantStepECDLP(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, const ZZ& subgroupOrder){
+ZZ babyStepGiantStepECDLP(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, const ZZ& n){
 
-    ZZ m = SqrRoot(subgroupOrder) + ZZ(1);
+    ZZ m = SqrRoot(n) + ZZ(1);
     unordered_map<ECPoint, ZZ, ECPointHasher> babySteps;
 
     // Compute baby steps: P, 2P, 3P, ..., jP
@@ -305,7 +305,7 @@ ZZ babyStepGiantStepECDLP(const ECPoint& P, const ECPoint& Q, const EllipticCurv
 
         if (babySteps.find(curr) != babySteps.end()){
             ZZ j = babySteps[curr];
-            ZZ k = (i * m + j) % subgroupOrder;
+            ZZ k = (i * m + j) % n;
             return k;              
         }
 
@@ -324,50 +324,50 @@ ZZ partition(const ECPoint& P) {
     return P.x % ZZ(3); 
 }
 
-PollardRhoState f(const PollardRhoState& state, const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, const ZZ& subgroupOrder) {
+PollardRhoState f(const PollardRhoState& state, const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, const ZZ& n) {
     PollardRhoState nextState = state;
     ZZ category = partition(state.X);
 
     if (category == 0) {
         nextState.X = addPoints(state.X, P, EC);
-        nextState.a = (state.a + 1) % subgroupOrder; 
+        nextState.a = (state.a + 1) % n; 
     } else if (category == 1) {
         nextState.X = doublePoint(state.X,EC);
-        nextState.a = (2 * state.a) % subgroupOrder; 
-        nextState.b = (2 * state.b) % subgroupOrder; 
+        nextState.a = (2 * state.a) % n; 
+        nextState.b = (2 * state.b) % n; 
     } else {
         nextState.X = addPoints(state.X, Q, EC);
-        nextState.b = (state.b + 1) % subgroupOrder; 
+        nextState.b = (state.b + 1) % n; 
     }
     return nextState;
 }
 
-ZZ pollardRhoECDLP(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, const ZZ& subgroupOrder) {
+ZZ pollardRhoECDLP(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, const ZZ& n) {
 
     PollardRhoState turtle = {P, ZZ(1), ZZ(0)}; 
     PollardRhoState rabbit = {P, ZZ(1), ZZ(0)}; 
 
-    turtle = f(turtle, P, Q, EC, subgroupOrder);
-    rabbit = f(f(rabbit, P, Q, EC, subgroupOrder), P, Q, EC, subgroupOrder);
+    turtle = f(turtle, P, Q, EC, n);
+    rabbit = f(f(rabbit, P, Q, EC, n), P, Q, EC, n);
 
     while (!(turtle.X == rabbit.X)) {
-        turtle = f(turtle, P, Q, EC, subgroupOrder);
-        rabbit = f(f(rabbit, P, Q, EC, subgroupOrder), P, Q, EC, subgroupOrder);
+        turtle = f(turtle, P, Q, EC, n);
+        rabbit = f(f(rabbit, P, Q, EC, n), P, Q, EC, n);
     }
          
-    ZZ numerator = (turtle.a - rabbit.a) % subgroupOrder;
-    ZZ denominator = (rabbit.b - turtle.b) % subgroupOrder;
+    ZZ numerator = (turtle.a - rabbit.a) % n;
+    ZZ denominator = (rabbit.b - turtle.b) % n;
 
     if (denominator == 0) {
         return ZZ(-1);
     }
 
-    ZZ_p::init(subgroupOrder); 
+    ZZ_p::init(n); 
 
     ZZ_p p_inv = inv(to_ZZ_p(denominator));
 
     if (p_inv == 0) {
-        cout << "Denominator has no inverse modulo subgroupOrder." << endl;
+        cout << "Denominator has no inverse modulo n." << endl;
         return ZZ(-1);
     }
 
