@@ -47,19 +47,6 @@ void turnOnCout() {
     cout.rdbuf(originalCoutBuf);
 }
    
-// bool isPrime(ZZ n) {
-//     cout << " started checking primality of n :" << n << endl;
-//     if (n <= ZZ(1)) {
-//       return false;
-//     }
-//     for (ZZ i = ZZ(2); i * i <= n; ++i) {
-//       cout << "still chekicng";
-//       if (n % i == 0) {
-//         return false;
-//       }
-//     }
-//     return true;
-// }
 
 struct ECPoint {
     ZZ x, y;
@@ -186,7 +173,6 @@ ECPoint addPoints(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC){
         return ECPoint(); // TODO : add something better than point at infinity here 
     }
 
-    // cout << P.toString() << " + " << Q.toString() << " = "; 
 
     if (P.isPointAtInfinity) return Q; 
     if (Q.isPointAtInfinity) return P; 
@@ -244,7 +230,6 @@ ECPoint scalarPointMultiplication(const ZZ& k_const, const ECPoint& P, const Ell
         k >>= 1;
     }
     turnOnCout();
-    // cout << endl <<k_const << "*" << P.toString() << " = " << result.toString() << ", ";
     return result;
 }
 
@@ -255,7 +240,7 @@ ECPoint inversePoint(const ECPoint& P, const EllipticCurve& EC) {
     }
     catch (PointNotOnCurveException& e) {
         cout << "Caught an exception: " << e.what() << endl;
-        return ECPoint(); // TODO : add something better than point at infinity here 
+        return ECPoint();
     }
 
     if (P == ECPoint()) return ECPoint();
@@ -275,12 +260,10 @@ ZZ bruteSearchSubgroupOrder(const ECPoint& P, const EllipticCurve& EC){
     cout << "brute search order of generated subgroup from point " << P.toString() <<  endl;
     ECPoint temp = ECPoint();
     ZZ order = ZZ(0);
-    // turnOffCout();
     do{
         temp = addPoints(temp,P,EC);
         order++;
     } while (!(temp == ECPoint()));
-    // turnOnCout();
     return order;
 }
 
@@ -289,23 +272,15 @@ ZZ naiveSearchECDLP(const ECPoint& P, const ECPoint& multipleOfP, const Elliptic
     if (!EC.isOnCurve(P)) throw PointNotOnCurveException(P, EC);
     if (!EC.isOnCurve(multipleOfP)) throw PointNotOnCurveException(P, EC);
 
-    // cout << "brute search point multiplicity of point " << P.toString() <<  endl;
     ZZ order = ZZ(0);           
     ECPoint temp = ECPoint();        
     
-
-    // do{
-    //     temp = addPoints(temp,P,EC);
-    //     order++;
-    // } while (!(temp == ECPoint()));
-
     while (order <= subgroupOrder) {
         if (temp == multipleOfP) {
             break;
         }
         temp = addPoints(temp, P, EC); 
         order++;
-        // cout << order << endl;
     }
     return order;
 
@@ -350,7 +325,6 @@ ZZ partition(const ECPoint& P) {
     return P.x % ZZ(3); 
 }
 
-// ai bi P  == aj bj Q 
 PollardRhoState f(const PollardRhoState& state, const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, const ZZ& subgroupOrder) {
     PollardRhoState nextState = state;
     ZZ category = partition(state.X);
@@ -377,22 +351,15 @@ ZZ pollardRhoECDLP(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, 
     turtle = f(turtle, P, Q, EC, subgroupOrder);
     rabbit = f(f(rabbit, P, Q, EC, subgroupOrder), P, Q, EC, subgroupOrder);
 
-    ZZ i = ZZ(0);
     while (!(turtle.X == rabbit.X)) {
         turtle = f(turtle, P, Q, EC, subgroupOrder);
         rabbit = f(f(rabbit, P, Q, EC, subgroupOrder), P, Q, EC, subgroupOrder);
-        i++;
     }
          
-    // cout << endl << "Collision found at iteration: " << i << endl;
-    // cout << "Turtle X: " << turtle.X.toString() << ", a=" << turtle.a << ", b=" << turtle.b << endl;
-    // cout << "Rabbit X: " << rabbit.X.toString() << ", a=" << rabbit.a << ", b=" << rabbit.b << endl;
-
     ZZ numerator = (turtle.a - rabbit.a) % subgroupOrder;
     ZZ denominator = (rabbit.b - turtle.b) % subgroupOrder;
 
     if (denominator == 0) {
-        // cout << "Denominator is zero, no inverse. Try again or different f function." << endl;
         return ZZ(-1);
     }
 
@@ -407,19 +374,17 @@ ZZ pollardRhoECDLP(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC, 
 
     ZZ k = rep((to_ZZ_p(numerator) * p_inv));
 
-    // cout << "Pollard Rho found potential k: " << k << endl;
     return k;
         
 }
-
 
 // Function to extract bits from a ZZ number and store them in a vector<bool>
 vector<bool> getBitVector(const ZZ& num, long bitSize) {
     vector<bool> bitVec(bitSize, false);
     
-    long numBits = NumBits(num); // Get actual bit length of the number
+    long numBits = NumBits(num); 
     for (long i = 0; i < numBits; i++) {
-        bitVec[bitSize - 1 - i] = bit(num, i); // Store bit at the correct index
+        bitVec[bitSize - 1 - i] = bit(num, i); 
     }
     
     return bitVec;
@@ -498,29 +463,6 @@ struct ECDLP_JSONTestParams {
     ZZ log2_order;
 };
 
-// Helper function to open and parse a JSON file, returning true on success
-// bool loadJson(const string& filename, json& j) {
-//     ifstream file(filename);
-//     if (!file) {
-//         cerr << "Failed to open JSON file: " << filename << endl;
-//         return false;
-//     }
-
-//     try {
-//         file >> j;
-//     } catch (const json::parse_error& e) {
-//         cerr << "JSON parse error in " << filename << ": " << e.what() << endl;
-//         return false;
-//     }
-
-//     if (!j.is_array()) {
-//         cerr << "Expected a JSON array at the top level in " << filename << endl;
-//         return false;
-//     }
-
-//     return true;
-// }
-
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -567,7 +509,7 @@ vector<ShamirJSONTestParams> loadShamirParams(const string& filename) {
 
     vector<ShamirJSONTestParams> curves;
     try {
-        for (const auto& entry : j) { // for larger bit sizes we need to utilize inline special constructor from strings 
+        for (const auto& entry : j) { 
             ShamirJSONTestParams cp;
             cp.bit_size = ZZ(NTL::INIT_VAL, entry["bit_size"].get<string>().c_str());
             cp.prime = ZZ(NTL::INIT_VAL, entry["prime"].get<string>().c_str());
@@ -602,7 +544,7 @@ vector<ECDLP_JSONTestParams> loadECDLPParams(const string& filename, int loadNai
 
     vector<ECDLP_JSONTestParams> curves;
     try {
-        for (const auto& entry : j) { // for smaller bit sizes long constructor is sufficient
+        for (const auto& entry : j) { 
             ECDLP_JSONTestParams cp;
             cp.bit_size = ZZ(NTL::INIT_VAL, entry["bit_size"].get<string>().c_str());
             
@@ -854,8 +796,6 @@ void showLinearCombinationOfPointsMenu() {
         }
     }
 }
-
-
 
 
 int main() {
