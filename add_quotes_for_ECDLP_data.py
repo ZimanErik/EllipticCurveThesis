@@ -11,8 +11,8 @@ def convert_ints_to_strings(obj):
     return obj
 
 # Specify the input and output filenames
-input_filename = "ecdlpcurvesnaive_extra.json"  # Save your JSON data to this file
-output_filename = "ecdlpcurvesnaive_extra.json"
+input_filename = "ecdlpcurvesnaive.json"  # Save your JSON data to this file
+output_filename = "ecdlpcurvesnaive.json"
 
 try:
     # Load the JSON data from the input file

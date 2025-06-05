@@ -128,7 +128,7 @@ def generate_ecdlp_curves():
                     G_order = G.order()
                     if is_prime(G_order):
                         results.append({
-                            "bit_size": p_size,
+                            "bit_size": str(p_size),
                             "prime": str(p),
                             "curve": {
                                 "a": str(a),
