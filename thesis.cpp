@@ -14,20 +14,12 @@ using namespace std;
 #include <NTL/ZZ_p.h>
 #include <nlohmann/json.hpp>
 
-#include <iostream>
 #include <exception>
 #include <sstream>
 #include <chrono>
 #include <unordered_map>
 #include <streambuf>
-#include <vector>
-#include <fstream>
-#include <vector>
-#include <string>
 
-
-
-using json = nlohmann::json;
 NTL_CLIENT
 
 class NullStreamBuf : public std::streambuf {
@@ -582,7 +574,7 @@ int runECDLPAnalysis(const string& filename, const string& outputFilename, ZZ (*
     clock_t end;
     vector<double> results;
     stringstream ss;
-    ofstream outputFile(outputFilename, ios::app);
+    ofstream outputFile(outputFilename, std::ios::trunc);
 
     for (size_t i = 0; i < curves.size(); ++i) {
         const auto& curve = curves[i];
@@ -695,7 +687,7 @@ void showECDLPSubMenu() {
     }
 }
 
-int calculateLinearCombinationOfPoints(const string& filename, const string& outputFilename, ECPoint (*calculateLinearCombination)(const ECPoint& P, const ECPoint& Q, const ZZ& n, const ZZ& m, const EllipticCurve& EC)){
+int calculateLinearCombinationOfPoints(const string& filename, const string& outputFilename, ECPoint (*calculateLinearCombination)(const ECPoint& P, const ECPoint& Q, const ZZ& m, const ZZ& l, const EllipticCurve& EC)){
     vector<ShamirJSONTestParams> curves = loadShamirParams(filename);
     if (curves.empty()) {
         cout << "Exiting because JSON file is empty." << endl;
@@ -707,7 +699,7 @@ int calculateLinearCombinationOfPoints(const string& filename, const string& out
     clock_t startbrute;
     stringstream ss;
     vector<clock_t> vec_elapsed;
-    ofstream outputFile(outputFilename, ios::app);
+    ofstream outputFile(outputFilename, std::ios::trunc);
     int cnt = 0;
     for (size_t i = 0; i < 2; i++) {
         clock_t sumofelapsed = 0;
