@@ -103,8 +103,6 @@ struct EllipticCurve {
         
         ZZ_p left = sqr(y);
         
-        //? IDEA:  ZZ_p right = x*x*x + conv<ZZ_p>(a) * x + conv<ZZ_p>(b);
-        //? IDEA:  ZZ_p right2 = to_ZZ_p(PowerMod(P.x, to_ZZ(3), p)) + to_ZZ_p(a)*x + to_ZZ_p(b); 
         ZZ_p right = x*x*x + to_ZZ_p(a)*x + to_ZZ_p(b);      
         
         return (left == right);
@@ -195,8 +193,8 @@ ECPoint addPoints(const ECPoint& P, const ECPoint& Q, const EllipticCurve& EC){
    return ECPoint(x,y);
 }
 
-// Scalar multiplication: kP
-ECPoint scalarPointMultiplication(const ZZ& k_const, const ECPoint& P, const EllipticCurve& EC) {
+// Scalar multiplication: cP
+ECPoint scalarPointMultiplication(const ZZ& c, const ECPoint& P, const EllipticCurve& EC) {
     try {
         if (!EC.isOnCurve(P)) throw PointNotOnCurveException(P,EC);
     }
@@ -207,8 +205,8 @@ ECPoint scalarPointMultiplication(const ZZ& k_const, const ECPoint& P, const Ell
 
     ECPoint result; 
 
-    // done so we have modifiable lvalue for shifting k's bits and still be able to call function with ZZ(123)
-    ZZ k = ZZ(k_const);  
+    // done so we have modifiable lvalue for shifting c's bits and still be able to call function with ZZ(123)
+    ZZ k = ZZ(c);  
 
     ECPoint base = P;
     turnOffCout();
@@ -584,8 +582,6 @@ int runECDLPAnalysis(const string& filename, const string& outputFilename, ZZ (*
         cout << "Curve #" << i + 1 << ":" << endl;
         cout << "Key bit Size: " << curve.bit_size << endl;
         ZZ privateKey = RandomBnd(curve.curve_order) + 1;
-        // testingval = privateKey;
-        // privateKey = ZZ(30004);
         cout << "Generated private key: " << privateKey << endl;
         ECPoint multipliedPoint = scalarPointMultiplication(privateKey, Point, EC);
 
@@ -605,6 +601,7 @@ int runECDLPAnalysis(const string& filename, const string& outputFilename, ZZ (*
             ss << ",";
         } else {
             outputFile << ss.str() << "\n";
+            outputFile.flush();
             cout << "results : " << ss.str() << endl;
             ss = stringstream();
         }
@@ -651,7 +648,6 @@ void showECDLPSubMenu() {
         cout << "1. BSGS\n";
         cout << "2. Pollard's Rho\n";
         cout << "3. Naive search\n";
-        cout << "4. Return to Main Menu\n";
 
         int choice = getIntInput("Enter your choice (1-3): ");
 
@@ -671,11 +667,6 @@ void showECDLPSubMenu() {
             case 3: {
                 cout << "starting ECDLP through Naive search\n";
                 runNaiveSearchECDLPanalysis();
-                inSubMenu = false;
-                break;
-            }
-            case 4: {
-                cout << "Exit the application...\n";
                 inSubMenu = false;
                 break;
             }
@@ -701,7 +692,7 @@ int calculateLinearCombinationOfPoints(const string& filename, const string& out
     vector<clock_t> vec_elapsed;
     ofstream outputFile(outputFilename, std::ios::trunc);
     int cnt = 0;
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < curves.size()/1000; i++) {
         clock_t sumofelapsed = 0;
         for (int j=0;j<1000;j++){
             const auto& curve = curves[cnt++];
@@ -733,10 +724,7 @@ int calculateLinearCombinationOfPoints(const string& filename, const string& out
     }
 
     outputFile.close();
-    cout << "RESULTS : " << endl;
-    for ( auto& res : vec_elapsed ){
-        cout << res << ", " ;
-    }
+
     cout << endl;
     
     return 0;
@@ -757,9 +745,8 @@ void showLinearCombinationOfPointsMenu() {
         cout << "\n--- Choose algorithm calculate linear combination of two points ---\n";
         cout << "1. Shamir's trick\n";
         cout << "2. Naive search\n";
-        cout << "3. Return to Main Menu\n";
 
-        int choice = getIntInput("Enter your choice (1-3): ");
+        int choice = getIntInput("Enter your choice (1-2): ");
 
         switch (choice) {
             case 1: {
@@ -775,13 +762,8 @@ void showLinearCombinationOfPointsMenu() {
                 inSubMenu = false;
                 break;
             }
-            case 3: {
-                cout << "Exit the application...\n";
-                inSubMenu = false;
-                break;
-            }
             default: {
-                cout << "Invalid option. Please choose 1, 2, or 3.\n";
+                cout << "Invalid option. Please choose 1 or 2.\n";
                 break;
             }
         }

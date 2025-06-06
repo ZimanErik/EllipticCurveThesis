@@ -24,10 +24,10 @@ def get_ecdlp_solver_type():
             return choice
         print("Invalid input. Please enter 1 or 2.")
 
-def get_bit_size_range():
+def get_bit_size_range(num_of_instances):
     while True:
         try:
-            user_input = input("Enter bit size range with optional step (e.g., 220-250,5): ").strip()
+            user_input = input(f"Enter bit size range with optional step (e.g., 220-250,5). For each bit size {num_of_instances} instances will be generated : ").strip()
             if ',' in user_input:
                 range_part, step_part = user_input.split(',')
                 step = int(step_part)
@@ -41,18 +41,8 @@ def get_bit_size_range():
         except Exception:
             print("Invalid input. Use format like 220-250,5 or 220-250.")
 
-def get_iterations():
-    while True:
-        try:
-            iterations = int(input("Enter number of instances per bit size: "))
-            if iterations <= 0:
-                raise ValueError
-            return iterations
-        except Exception:
-            print("Invalid input. Enter a positive integer.")
-
 def generate_shamir_curves():
-    bit_sizes = get_bit_size_range()
+    bit_sizes = get_bit_size_range(1000)
     iterations_per_size = 1000
     output_path = Path("shamircurves_extra.json")
     results = []
@@ -61,35 +51,37 @@ def generate_shamir_curves():
         print(f"\n[---] Generating data for {p_size} bits ---")
         for i in range(iterations_per_size):
             print(f"[*] Iteration {i+1}/{iterations_per_size} for {p_size} bits")
-            try:
-                start_time = time.time()
-                p = random_prime(2**p_size - 1, False, 2**(p_size - 1))
-                a = randint(1, p - 1)
-                b = randint(1, p - 1)
-                E = EllipticCurve(GF(p), [a, b])
-                G = E.random_element()
-                G2 = E.random_element()
-                results.append({
-                    "bit_size": str(p_size),
-                    "prime": str(p),
-                    "curve": {
-                        "a": str(a),
-                        "b": str(b)
-                    },
-                    "curve_order": str(E.order()),
-                    "P": {
-                        "x": str(G.xy()[0]),
-                        "y": str(G.xy()[1])
-                    },
-                    "Q": {
-                        "x": str(G2.xy()[0]),
-                        "y": str(G2.xy()[1])
-                    },
-                })
-                print(f"[OK] Done in {round(time.time() - start_time, 2)}s")
-            except Exception as e:
-                print(f"[WRONG] Error: {e}")
-                continue
+            while True:
+                try:
+                    start_time = time.time()
+                    p = random_prime(2**p_size - 1, False, 2**(p_size - 1))
+                    a = randint(1, p - 1)
+                    b = randint(1, p - 1)
+                    E = EllipticCurve(GF(p), [a, b])
+                    G = E.random_element()
+                    G2 = E.random_element()
+                    results.append({
+                        "bit_size": str(p_size),
+                        "prime": str(p),
+                        "curve": {
+                            "a": str(a),
+                            "b": str(b)
+                        },
+                        "curve_order": str(E.order()),
+                        "P": {
+                            "x": str(G.xy()[0]),
+                            "y": str(G.xy()[1])
+                        },
+                        "Q": {
+                            "x": str(G2.xy()[0]),
+                            "y": str(G2.xy()[1])
+                        },
+                    })
+                    print(f"[OK] Done in {round(time.time() - start_time, 2)}s")
+                    break
+                except Exception as e:
+                    print(f"[RETRY] Error: {e}")
+                    continue
 
     with open(output_path, "w") as f:
         json.dump(results, f, indent=4)
@@ -98,8 +90,7 @@ def generate_shamir_curves():
 
 def generate_ecdlp_curves():
     type = get_ecdlp_solver_type()
-    bit_sizes = get_bit_size_range()
-    # iterations_per_size = get_iterations()
+    bit_sizes = get_bit_size_range(100)
     iterations_per_size = 100
     
     if type == "1":
@@ -142,7 +133,7 @@ def generate_ecdlp_curves():
                             "generator_order": str(G_order),
                             "log2_order": str(ceil(log(G_order) / log(2)))
                         })
-                        print(f"[OK] {p_size} bits.")
+                        print(f"[OK] {p_size}-bit sized ECDLP instance generated.")
                         break
                 except Exception as e:
                     print(f"[RETRY] {p_size} bits: {e}")
@@ -152,6 +143,7 @@ def generate_ecdlp_curves():
         json.dump(results, f, indent=4)
 
     print(f"\n[OK] Script completed. Total curves generated: {len(results)}")
+    print(f"Output saved to {output_path}")
 
 def main():
     mode = get_mode()
