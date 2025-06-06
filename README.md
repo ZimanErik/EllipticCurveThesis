@@ -1,6 +1,6 @@
 # Bachelor's Thesis – Elliptic Curves Focused Console Application
 
-Welcome! 👋
+Welcome!
 This repository contains the codebase for my Bachelor's thesis project — a C++ console application designed to solve mathematical problems on elliptic curves. It particularly focuses on the **Elliptic Curve Discrete Logarithm Problem (ECDLP)** and **Shamir's trick** for calculating linear combinations of two points.
 
 ## 🔍 What It Does
@@ -60,6 +60,6 @@ Included in the repository is a Python script: `generate_curves.py`.
 -   You can run this script using the command `python3 generate_curves.py`.
 -   The script will guide you through the process of creating new datasets (elliptic curves and problem instances).
 -   These new datasets are saved as `.json` files with the `_extra` suffix (e.g., `ecdlpcurves_extra.json`, `shamircurves_extra.json`).
--   As mentioned above, the C++ application will automatically detect and use these `_extra.json` files if they are present, overriding the default input files.
+-   As mentioned above, the C++ application will automatically prefer to use `_extra.json` files if they are present.
 
 ---
