@@ -37,7 +37,7 @@ The application uses structured `.json` files for its input. These files define 
 The application generates `.csv` files to store the results and performance metrics of the executed algorithms.
 
 -   **Generated Results:** When you run the application, it outputs results into `.csv` files (e.g., `ECDLP_BSGS.csv`, `shamir_results.csv`).
--   **Thesis Results:** Files included in the repository that end with `-test.csv` (e.g., `ECDLP_BSGS-test.csv`, `ECDLP_PollardRho-test.csv`) contain the specific results that were tested and are presented as part of the bachelor's thesis documentation. The application will generate corresponding files *without* the `-test` suffix during its execution.
+-   **Thesis Results:** All of the result files which are main source of information in terms of achieved metrics and acquired results of the thesis are included in the **thesis-result-files** folder of the repository
 
 ## 🚀 How to Compile and Run
 
