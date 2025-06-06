@@ -15,9 +15,7 @@ When using the app, you can choose which algorithm to apply for solving the ECDL
 -   **Pollard’s Rho Algorithm**
 -   **Naive Search**
 
-Alternatively, you can choose to start analyzing the execution of **Shamir's trick**.
-
-This provides flexibility for testing and comparing the performance and behavior of these algorithms.
+Alternatively, you can choose to start analyzing the execution of **Shamir's trick** or it's alternative - **Naive scalar point multiplication**.
 
 ## ⚙️ Technologies Used
 
